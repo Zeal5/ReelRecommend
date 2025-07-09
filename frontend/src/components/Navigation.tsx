@@ -1,4 +1,4 @@
-import { Home, Search, Star, Film } from "lucide-react";
+import { Home,LogIn, Search, Star, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -8,9 +8,9 @@ export const Navigation = () => {
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
-    { icon: Search, label: "Search", path: "/search" },
-    { icon: Film, label: "Movies", path: "/movies" },
-    { icon: Star, label: "Favorites", path: "/favorites" },
+    { icon:LogIn, label: "Login", path: "/login" },
+    // { icon: Film, label: "Movies", path: "/movies" },
+    // { icon: Star, label: "Favorites", path: "/favorites" },
   ];
 
   return (
