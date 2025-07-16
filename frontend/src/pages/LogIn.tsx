@@ -1,9 +1,12 @@
 import React, { useState } from "react";
+import { BACKEND_ENDPOINTS } from "../data/constants";
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+	const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -15,7 +18,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/login/", {
+			const response = await fetch(BACKEND_ENDPOINTS.GET_AUTH_TOKEN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -31,6 +34,8 @@ const Login = () => {
       const data = await response.json();
       // Handle success: save token, redirect, etc.
       console.log("Login success", data);
+			localStorage.setItem('token', data.token);
+			navigate("/");
       setLoading(false);
     } catch (err) {
       setError("Network error");
@@ -67,7 +72,7 @@ const Login = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="you@example.com"
-              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 text-black placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
             />
           </div>
 
@@ -86,7 +91,7 @@ const Login = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="••••••••"
-              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 text-black placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
             />
           </div>
 
