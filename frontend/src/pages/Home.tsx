@@ -1,7 +1,12 @@
 import { Navigation } from "@/components/Navigation";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { MovieCarousel } from "@/components/MovieCarousel";
-import { getTrendingMovies, getNewReleases, getTopRated, mockMovies } from "@/data/movies";
+import {
+  getTrendingMovies,
+  getNewReleases,
+  getTopRated,
+  mockMovies,
+} from "@/data/movies";
 
 const Home = () => {
   const trendingMovies = getTrendingMovies();
@@ -11,11 +16,10 @@ const Home = () => {
   // Simulated peer watching data (in a real app, this would come from analytics)
   const peerWatching = mockMovies.slice(2, 6);
   const youMightLike = mockMovies.slice(1, 5);
-
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      
+
       {/* Hero Carousel */}
       <HeroCarousel movies={trendingMovies} />
 
@@ -36,33 +40,29 @@ const Home = () => {
         />
 
         {/* New Releases */}
-        <MovieCarousel
-          title="New Releases"
-          movies={newReleases}
-          size="lg"
-        />
+        <MovieCarousel title="New Releases" movies={newReleases} size="lg" />
 
         {/* Top Rated */}
-        <MovieCarousel
-          title="Top Rated Movies"
-          movies={topRated}
-          size="md"
-        />
+        <MovieCarousel title="Top Rated Movies" movies={topRated} size="md" />
 
         {/* Browse by Genre */}
         <div className="px-4">
-          <h2 className="text-2xl font-bold text-foreground mb-6">Browse by Genre</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-6">
+            Browse by Genre
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {["Action", "Comedy", "Drama", "Sci-Fi", "Romance", "Thriller"].map((genre) => (
-              <div
-                key={genre}
-                className="bg-card border border-border rounded-lg p-6 text-center cursor-pointer hover:bg-accent hover:border-primary/50 transition-all duration-300 group"
-              >
-                <span className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">
-                  {genre}
-                </span>
-              </div>
-            ))}
+            {["Action", "Comedy", "Drama", "Sci-Fi", "Romance", "Thriller"].map(
+              (genre) => (
+                <div
+                  key={genre}
+                  className="bg-card border border-border rounded-lg p-6 text-center cursor-pointer hover:bg-accent hover:border-primary/50 transition-all duration-300 group"
+                >
+                  <span className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">
+                    {genre}
+                  </span>
+                </div>
+              ),
+            )}
           </div>
         </div>
       </div>
@@ -74,7 +74,9 @@ const Home = () => {
             <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
               <span className="text-white font-bold">S</span>
             </div>
-            <span className="text-2xl font-bold text-foreground">StreamMovies</span>
+            <span className="text-2xl font-bold text-foreground">
+              StreamMovies
+            </span>
           </div>
           <p className="text-muted-foreground">
             Your premium destination for the latest movies and shows
