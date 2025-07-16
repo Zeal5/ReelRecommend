@@ -1,9 +1,12 @@
 import React, { useState } from "react";
+import { BACKEND_ENDPOINTS } from "../data/constants";
+import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({ username: "", email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+	const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -15,10 +18,11 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/signup/", {
+      const response = await fetch(BACKEND_ENDPOINTS.REGISTER, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
+				mode: 'cors',
       });
 
       if (!response.ok) {
@@ -29,10 +33,11 @@ const Signup = () => {
       }
 
       const data = await response.json();
-      // Handle success: e.g., show message, redirect, or auto-login
       console.log("Signup success", data);
+			navigate("/login");
       setLoading(false);
     } catch (err) {
+			console.log(err);
       setError("Network error");
       setLoading(false);
     }
@@ -61,13 +66,13 @@ const Signup = () => {
             </label>
             <input
               type="text"
-              name="name"
+              name="username"
               id="name"
               required
-              value={formData.name}
+              value={formData.username}
               onChange={handleChange}
               placeholder="Your full name"
-              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 text-black focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
             />
           </div>
 
@@ -86,7 +91,7 @@ const Signup = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="you@example.com"
-              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 text-black focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
             />
           </div>
 
@@ -105,7 +110,7 @@ const Signup = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="••••••••"
-              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 text-black focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
             />
           </div>
 
