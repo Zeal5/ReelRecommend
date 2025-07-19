@@ -14,6 +14,7 @@ class RegisterUserView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, format=None):
+        print(request.data)
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()  # creates the user instance
@@ -41,11 +42,13 @@ class GetUserAuthTokenView(APIView):
                 "Invalid email or password", status=status.HTTP_400_BAD_REQUEST
             )
         token, created = Token.objects.get_or_create(user=user)
+        print(token)
 
         return Response({"token": token.key})
 
 
 class UserView(APIView):
+    """NOT USED"""
 
     def get(self, request):
         # users = User.objects.filter(request.user)

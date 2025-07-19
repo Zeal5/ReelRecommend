@@ -10,14 +10,16 @@ import { Card } from "@/components/ui/card";
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   const movie = id ? getMovieById(id) : null;
 
   if (!movie) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Movie not found</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">
+            Movie not found
+          </h1>
           <Button onClick={() => navigate("/")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
@@ -30,15 +32,15 @@ const MovieDetails = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      
+
       <div className="pt-16">
         {/* Hero Section */}
-        <div 
+        <div
           className="relative h-96 bg-cover bg-center"
           style={{ backgroundImage: `url(${movie.backdrop})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/20" />
-          
+
           {/* Back Button */}
           <div className="absolute top-6 left-6 z-10">
             <Button
@@ -71,10 +73,14 @@ const MovieDetails = () => {
               <div>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {movie.isTrending && (
-                    <Badge className="bg-gradient-primary text-white">TRENDING</Badge>
+                    <Badge className="bg-gradient-primary text-white">
+                      TRENDING
+                    </Badge>
                   )}
                   {movie.isNew && (
-                    <Badge className="bg-primary text-primary-foreground">NEW RELEASE</Badge>
+                    <Badge className="bg-primary text-primary-foreground">
+                      NEW RELEASE
+                    </Badge>
                   )}
                 </div>
                 <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-2">
@@ -101,7 +107,11 @@ const MovieDetails = () => {
               {/* Genres */}
               <div className="flex flex-wrap gap-2">
                 {movie.genre.map((genre) => (
-                  <Badge key={genre} variant="outline" className="border-border">
+                  <Badge
+                    key={genre}
+                    variant="outline"
+                    className="border-border"
+                  >
                     {genre}
                   </Badge>
                 ))}
@@ -109,7 +119,9 @@ const MovieDetails = () => {
 
               {/* Synopsis */}
               <div>
-                <h2 className="text-xl font-semibold text-foreground mb-3">Synopsis</h2>
+                <h2 className="text-xl font-semibold text-foreground mb-3">
+                  Synopsis
+                </h2>
                 <p className="text-muted-foreground leading-relaxed text-lg">
                   {movie.synopsis}
                 </p>
@@ -117,15 +129,23 @@ const MovieDetails = () => {
 
               {/* Cast & Crew */}
               <div>
-                <h2 className="text-xl font-semibold text-foreground mb-3">Cast & Crew</h2>
+                <h2 className="text-xl font-semibold text-foreground mb-3">
+                  Cast & Crew
+                </h2>
                 <div className="space-y-2">
                   <div>
-                    <span className="font-medium text-foreground">Director: </span>
-                    <span className="text-muted-foreground">{movie.director}</span>
+                    <span className="font-medium text-foreground">
+                      Director:{" "}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {movie.director}
+                    </span>
                   </div>
                   <div>
                     <span className="font-medium text-foreground">Cast: </span>
-                    <span className="text-muted-foreground">{movie.cast.join(", ")}</span>
+                    <span className="text-muted-foreground">
+                      {movie.cast.join(", ")}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -134,17 +154,24 @@ const MovieDetails = () => {
 
           {/* Video Player */}
           <div className="mt-12">
-            <h2 className="text-2xl font-bold text-foreground mb-6">Watch {movie.title}</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">
+              Watch {movie.title}
+            </h2>
             <VideoPlayer poster={movie.backdrop} title={movie.title} />
           </div>
 
           {/* Episodes Section (for series) */}
           {movie.episodes && (
             <div className="mt-12">
-              <h2 className="text-2xl font-bold text-foreground mb-6">Episodes</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-6">
+                Episodes
+              </h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {movie.episodes.map((episode) => (
-                  <Card key={episode.id} className="overflow-hidden cursor-pointer hover:shadow-card transition-shadow">
+                  <Card
+                    key={episode.id}
+                    className="overflow-hidden cursor-pointer hover:shadow-card transition-shadow"
+                  >
                     <img
                       src={episode.thumbnail}
                       alt={episode.title}
@@ -152,12 +179,15 @@ const MovieDetails = () => {
                     />
                     <div className="p-4">
                       <h3 className="font-semibold text-foreground mb-2">
-                        S{episode.seasonNumber}E{episode.episodeNumber}: {episode.title}
+                        S{episode.seasonNumber}E{episode.episodeNumber}:{" "}
+                        {episode.title}
                       </h3>
                       <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                         {episode.synopsis}
                       </p>
-                      <span className="text-xs text-muted-foreground">{episode.duration}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {episode.duration}
+                      </span>
                     </div>
                   </Card>
                 ))}
