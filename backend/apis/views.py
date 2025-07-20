@@ -9,8 +9,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-import json
+from django import db
 import logging
+from datetime import datetime
 
 from .recommendation_engine.services import recommendation_service
 from .recommendation_engine.data_fetcher import RealtimeUpdateProcessor
@@ -20,16 +21,28 @@ from .serializers import MovieSerializer, RatingSerializer, RecommendationSerial
 logger = logging.getLogger(__name__)
 realtime_processor = RealtimeUpdateProcessor(recommendation_service)
 
+
+
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([])
 def get_recommendations(request):
-    """Get personalized movie recommendations for the authenticated user."""
+    """Get movie recommendations for both authenticated and unauthenticated users."""
     try:
-        user_id = request.user.id
-        count = int(request.GET.get('count', 10))
-        
-        # Get recommendations from the service
-        recommendations = recommendation_service.get_recommendations(user_id, count)
+        # Check if user is authenticated
+        if request.user.is_authenticated:
+            # Authenticated user - get personalized recommendations
+            user_id = request.user.id
+            count = int(request.GET.get('count', 10))
+            
+            # Get recommendations from the service
+            recommendations = recommendation_service.get_recommendations(user_id, count)
+            
+        else:
+            # Unauthenticated user - get popular/fallback recommendations
+            count = int(request.GET.get('count', 10))
+            
+            # Get fallback recommendations (popular movies)
+            recommendations = recommendation_service.get_fallback_recommendations(count)
         
         # Add additional movie details
         enriched_recommendations = []
@@ -47,24 +60,32 @@ def get_recommendations(request):
         
         serializer = RecommendationSerializer(enriched_recommendations, many=True)
         
-        return Response({
+        res = Response({
             'success': True,
             'recommendations': serializer.data,
-            'count': len(serializer.data)
+            'count': len(serializer.data),
+            'is_personalized': request.user.is_authenticated  # Indicate if recommendations are personalized
         })
+        return res
 
     except Exception as e:
-        logger.error(f"Error getting recommendations for user {request.user.id}: {e}")
+        # Log different messages for authenticated vs unauthenticated users
+        user_info = f"user {request.user.id}" if request.user.is_authenticated else "anonymous user"
+        logger.error(f"Error getting recommendations for {user_info}: {e}")
+        
         return Response({
             'success': False,
             'error': 'Failed to get recommendations'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_rating(request):
     """Add or update a movie rating."""
+    db.close_old_connections()
     try:
+        print()
         movie_id = request.data.get('movie_id')
         rating_value = float(request.data.get('rating'))
         
@@ -125,6 +146,7 @@ def add_interaction(request):
     try:
         movie_id = request.data.get('movie_id')
         interaction_type = request.data.get('type')
+        logger.info(f"Recording interaction: {request.user.id}, {movie_id}, {interaction_type}")
         
         # Validate interaction type
         valid_types = ['view', 'like', 'dislike', 'share', 'watchlist_add', 'watchlist_remove']
@@ -171,3 +193,104 @@ def add_interaction(request):
             'success': False,
             'error': 'Failed to get recommendations'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+# get movies
+@api_view(['GET'])
+@permission_classes([]) # No authentication needed to view movie lists
+def get_movie_by_id(request, movie_id):
+    """
+    Get detailed information for a single movie by its ID.
+    """
+    try:
+        movie = get_object_or_404(Movie, id=movie_id)
+        serializer = MovieSerializer(movie)
+        return Response(serializer.data)
+    except Exception as e:
+        logger.error(f"Error getting movie with id {movie_id}: {e}")
+        return Response(
+            {'success': False, 'error': 'Movie not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+@api_view(['GET'])
+@permission_classes([])
+def get_trending_movies(request):
+    """
+    Get a list of trending movies.
+    Trending is determined by recent releases with high popularity.
+    """
+    try:
+        # Define "recent" as the last 3 years
+        last_three_years = datetime.now().year - 3
+        
+        # Filter for recent movies and order by popularity
+        trending_movies = Movie.objects.filter(
+            year__gte=last_three_years,
+            popularity__gt=100  # Filter out very low popularity movies
+        ).order_by('-popularity')[:15] # Get top 15
+
+        serializer = MovieSerializer(trending_movies, many=True)
+        return Response(serializer.data)
+        
+    except Exception as e:
+        logger.error(f"Error getting trending movies: {e}")
+        return Response(
+            {'success': False, 'error': 'Failed to retrieve trending movies'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['GET'])
+@permission_classes([])
+def get_new_releases(request):
+    """
+    Get a list of new release movies.
+    New releases are defined as movies from the current and previous year.
+    """
+    try:
+        current_year = datetime.now().year
+        
+        # Filter for movies from this year and last year, order by most recent
+        new_releases = Movie.objects.filter(
+            year__in=[current_year, current_year - 1]
+        ).order_by('-year', '-popularity')[:15] # Get top 15
+
+        serializer = MovieSerializer(new_releases, many=True)
+        return Response(serializer.data)
+
+    except Exception as e:
+        logger.error(f"Error getting new releases: {e}")
+        return Response(
+            {'success': False, 'error': 'Failed to retrieve new releases'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['GET'])
+@permission_classes([])
+def get_top_rated_movies(request):
+    """
+    Get a list of top-rated movies.
+    Top-rated is determined by vote average, with a minimum number of votes.
+    """
+    try:
+        # Filter for movies with a significant number of votes to ensure reliability
+        top_rated = Movie.objects.filter(
+            vote_count__gt=500 # Minimum 500 votes
+        ).order_by('-vote_average', '-vote_count')[:15] # Get top 15
+
+        serializer = MovieSerializer(top_rated, many=True)
+        return Response(serializer.data)
+
+    except Exception as e:
+        logger.error(f"Error getting top-rated movies: {e}")
+        return Response(
+            {'success': False, 'error': 'Failed to retrieve top-rated movies'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
