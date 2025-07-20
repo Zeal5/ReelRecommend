@@ -11,7 +11,7 @@ admin.site.register(UserInteraction)
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
     # Columns shown on the main changelist page
-    list_display = ('title','genres', 'popularity', 'vote_count')
+    list_display = ('title','genres', 'popularity', 'vote_count', 'id')
     
     # Fields to search by in the admin search bar
     search_fields = ('title',)
