@@ -1,25 +1,46 @@
 services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    command: sh -c ". /app/.venv/bin/activate && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "uv run python manage.py migrate && uv run python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app
     ports:
       - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DEBUG=1
+    depends_on:
+      - redis
 
   frontend:
     build:
       context: ./frontend
-    command: npm run dev -- --host 0.0.0.0
+      dockerfile: Dockerfile
+    command: npm run dev -- --host 0.0.0.0 --port 3000
     volumes:
       - ./frontend:/app
       - /app/node_modules
     ports:
-      - "3000:8080"
+      - "3000:3000"
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - VITE_API_URL=http://localhost:8000
     depends_on:
       - backend
 
+volumes:
+  redis_data:
