@@ -304,8 +304,9 @@ class RealtimeUpdateProcessor:
         """Process a new rating."""
         try:
             # Save to database (this should be done in your view)
-            from apis.models import Rating
-            from django.contrib.auth.models import User
+            from apis.models import Rating, Movie
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
 
             user = User.objects.get(id=user_id)
             movie = Movie.objects.get(id=movie_id)

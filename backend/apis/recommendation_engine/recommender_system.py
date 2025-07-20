@@ -117,7 +117,7 @@ class ContentBasedRecommender:
 class CollaborativeFilteringRecommender:
     """Collaborative filtering using matrix factorization (SVD)."""
 
-    def __init__(self, n_components=100, random_state=42):  # @DEV change to 100
+    def __init__(self, n_components=5, random_state=42):  # @DEV change to 100
         self.svd = TruncatedSVD(n_components=n_components, random_state=random_state)
         self.user_item_matrix = None
         self.user_factors = None
@@ -234,7 +234,7 @@ class HybridRecommender:
         self.content_recommender.fit(movies_df)
 
         # Train collaborative only if we have ratings data
-        if not ratings_df.empty and len(ratings_df) >= 10:  # Minimum threshold
+        if not ratings_df.empty and len(ratings_df) >= 5:  # Minimum threshold
             self.collaborative_recommender.fit(ratings_df)
             self.has_collaborative_data = True
             logger.info("Trained both content-based and collaborative filtering")
