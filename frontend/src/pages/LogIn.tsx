@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { BACKEND_ENDPOINTS } from "../data/constants";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-	const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,7 +18,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-			const response = await fetch(BACKEND_ENDPOINTS.GET_AUTH_TOKEN, {
+      const response = await fetch(BACKEND_ENDPOINTS.GET_AUTH_TOKEN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -34,8 +34,8 @@ const Login = () => {
       const data = await response.json();
       // Handle success: save token, redirect, etc.
       console.log("Login success", data);
-			localStorage.setItem('token', data.token);
-			navigate("/");
+      localStorage.setItem("token", data.token);
+      navigate("/");
       setLoading(false);
     } catch (err) {
       setError("Network error");
@@ -99,7 +99,9 @@ const Login = () => {
             type="submit"
             disabled={loading}
             className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-              loading ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
+              loading
+                ? "bg-indigo-400 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-700"
             } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
           >
             {loading ? "Signing in..." : "Sign In"}
