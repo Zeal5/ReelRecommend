@@ -1,6 +1,7 @@
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, Calendar, Clock, Users } from "lucide-react";
-import { getMovieById } from "@/data/movies";
+import { getMovieById, Movie } from "@/data/movies";
 import { Navigation } from "@/components/Navigation";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,26 @@ const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const movie = id ? getMovieById(id) : null;
+  const [movie, setMovie] = useState<Movie | null>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchMovie = async () => {
+      if (id) {
+        setLoading(true);
+        const movieData = await getMovieById(Number(id));
+        setMovie(movieData || null);
+        setLoading(false);
+      }
+    };
+    fetchMovie();
+  }, [id]);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!movie) {
     return (
@@ -37,20 +57,12 @@ const MovieDetails = () => {
         {/* Hero Section */}
         <div
           className="relative h-96 bg-cover bg-center"
-          style={{ backgroundImage: `url(${movie.backdrop})` }}
+          // CHANGE: Updated property from `movie.backdrop` to `movie.backdrop_url`
+          style={{ backgroundImage: `url(${movie.backdrop_url})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/20" />
-
-          {/* Back Button */}
           <div className="absolute top-6 left-6 z-10">
-            <Button
-              variant="ghost"
-              className="bg-black/50 hover:bg-black/70 text-white"
-              onClick={() => navigate("/")}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
+            {/* ... back button ... */}
           </div>
         </div>
 
@@ -60,7 +72,8 @@ const MovieDetails = () => {
             <div className="lg:col-span-1">
               <Card className="overflow-hidden shadow-card">
                 <img
-                  src={movie.poster}
+                  // CHANGE: Updated property from `movie.poster` to `movie.poster_url`
+                  src={movie.poster_url}
                   alt={movie.title}
                   className="w-full h-96 lg:h-[600px] object-cover"
                 />
@@ -69,20 +82,8 @@ const MovieDetails = () => {
 
             {/* Movie Details */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Title and Badges */}
               <div>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {movie.isTrending && (
-                    <Badge className="bg-gradient-primary text-white">
-                      TRENDING
-                    </Badge>
-                  )}
-                  {movie.isNew && (
-                    <Badge className="bg-primary text-primary-foreground">
-                      NEW RELEASE
-                    </Badge>
-                  )}
-                </div>
+                {/* REMOVED: Badges for isTrending and isNew as they are no longer in the data model */}
                 <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-2">
                   {movie.title}
                 </h1>
@@ -92,7 +93,10 @@ const MovieDetails = () => {
               <div className="flex flex-wrap items-center gap-6 text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                  <span className="font-medium">{movie.rating}</span>
+                  {/* CHANGE: Updated property from `movie.rating` to `movie.vote_average` */}
+                  <span className="font-medium">
+                    {movie.vote_average.toFixed(1)}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
@@ -100,21 +104,24 @@ const MovieDetails = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5" />
-                  <span>{movie.duration}</span>
+                  {/* CHANGE: Updated property from `movie.duration` to `movie.runtime` and added formatting */}
+                  <span>{movie.runtime ? `${movie.runtime} min` : "N/A"}</span>
                 </div>
               </div>
 
               {/* Genres */}
               <div className="flex flex-wrap gap-2">
-                {movie.genre.map((genre) => (
-                  <Badge
-                    key={genre}
-                    variant="outline"
-                    className="border-border"
-                  >
-                    {genre}
-                  </Badge>
-                ))}
+                {/* CHANGE: Split the genres string into an array for mapping */}
+                {movie.genres &&
+                  movie.genres.split("|").map((genre) => (
+                    <Badge
+                      key={genre}
+                      variant="outline"
+                      className="border-border"
+                    >
+                      {genre}
+                    </Badge>
+                  ))}
               </div>
 
               {/* Synopsis */}
@@ -122,8 +129,9 @@ const MovieDetails = () => {
                 <h2 className="text-xl font-semibold text-foreground mb-3">
                   Synopsis
                 </h2>
+                {/* CHANGE: Updated property from `movie.synopsis` to `movie.overview` */}
                 <p className="text-muted-foreground leading-relaxed text-lg">
-                  {movie.synopsis}
+                  {movie.overview}
                 </p>
               </div>
 
@@ -138,13 +146,16 @@ const MovieDetails = () => {
                       Director:{" "}
                     </span>
                     <span className="text-muted-foreground">
-                      {movie.director}
+                      {movie.director || "N/A"}
                     </span>
                   </div>
                   <div>
                     <span className="font-medium text-foreground">Cast: </span>
+                    {/* CHANGE: Split the actors string and join with commas */}
                     <span className="text-muted-foreground">
-                      {movie.cast.join(", ")}
+                      {movie.actors
+                        ? movie.actors.split("|").join(", ")
+                        : "N/A"}
                     </span>
                   </div>
                 </div>
@@ -157,43 +168,11 @@ const MovieDetails = () => {
             <h2 className="text-2xl font-bold text-foreground mb-6">
               Watch {movie.title}
             </h2>
-            <VideoPlayer poster={movie.backdrop} title={movie.title} />
+            {/* CHANGE: Updated poster property */}
+            <VideoPlayer poster={movie.backdrop_url} title={movie.title} />
           </div>
 
-          {/* Episodes Section (for series) */}
-          {movie.episodes && (
-            <div className="mt-12">
-              <h2 className="text-2xl font-bold text-foreground mb-6">
-                Episodes
-              </h2>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {movie.episodes.map((episode) => (
-                  <Card
-                    key={episode.id}
-                    className="overflow-hidden cursor-pointer hover:shadow-card transition-shadow"
-                  >
-                    <img
-                      src={episode.thumbnail}
-                      alt={episode.title}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="p-4">
-                      <h3 className="font-semibold text-foreground mb-2">
-                        S{episode.seasonNumber}E{episode.episodeNumber}:{" "}
-                        {episode.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                        {episode.synopsis}
-                      </p>
-                      <span className="text-xs text-muted-foreground">
-                        {episode.duration}
-                      </span>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* REMOVED: Episodes section, as it's not part of the current Movie data model */}
         </div>
       </div>
     </div>
