@@ -1,19 +1,20 @@
+import { API_BASE_URL } from "./constants";
+
 export interface Movie {
-  id: string;
+  id: number;
   title: string;
-  synopsis: string;
+  overview: string; // Renamed from synopsis
   year: number;
-  genre: string[];
-  rating: number;
-  duration: string;
-  poster: string;
-  backdrop: string;
-  trailer?: string;
-  cast: string[];
-  director: string;
-  isNew?: boolean;
-  isTrending?: boolean;
-  episodes?: Episode[];
+  genres: string; // Genres are now a single string, e.g., "Action|Adventure|Sci-Fi"
+  vote_average: number; // Renamed from rating
+  runtime?: number; // Renamed from duration and is now a number (in minutes)
+  poster_url: string; // Renamed from poster
+  backdrop_url: string; // Renamed from backdrop
+  trailer?: string; // This field may not be in your backend model yet
+  actors?: string; // Actors are a single string "Actor One|Actor Two"
+  director?: string;
+  popularity?: number;
+  vote_count?: number;
 }
 
 export interface Episode {
@@ -26,104 +27,177 @@ export interface Episode {
   seasonNumber: number;
 }
 
-export const mockMovies: Movie[] = [
-  {
-    id: "1",
-    title: "Nebula Rising",
-    synopsis: "A stunning space epic about humanity's first contact with an alien civilization that challenges everything we thought we knew about the universe.",
-    year: 2024,
-    genre: ["Sci-Fi", "Adventure", "Drama"],
-    rating: 8.7,
-    duration: "2h 28m",
-    poster: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400&h=600&fit=crop",
-    backdrop: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=1200&h=675&fit=crop",
-    cast: ["Emma Stone", "Oscar Isaac", "Mahershala Ali", "Lupita Nyong'o"],
-    director: "Denis Villeneuve",
-    isTrending: true,
-    isNew: true
-  },
-  {
-    id: "2",
-    title: "The Digital Heist",
-    synopsis: "A group of hackers attempts the ultimate digital robbery while being hunted by both the FBI and dangerous criminals.",
-    year: 2024,
-    genre: ["Thriller", "Crime", "Action"],
-    rating: 8.2,
-    duration: "2h 15m",
-    poster: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop",
-    backdrop: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200&h=675&fit=crop",
-    cast: ["Michael Shannon", "Anya Taylor-Joy", "John Boyega", "Zendaya"],
-    director: "Christopher Nolan",
-    isTrending: true
-  },
-  {
-    id: "3",
-    title: "Lost Kingdoms",
-    synopsis: "An epic fantasy adventure following a young warrior's quest to unite the scattered kingdoms against an ancient evil.",
-    year: 2023,
-    genre: ["Fantasy", "Adventure", "Action"],
-    rating: 9.1,
-    duration: "2h 45m",
-    poster: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop",
-    backdrop: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1200&h=675&fit=crop",
-    cast: ["Tom Holland", "Saoirse Ronan", "Dev Patel", "Tilda Swinton"],
-    director: "Peter Jackson",
-    isTrending: true
-  },
-  {
-    id: "4",
-    title: "Midnight in Paris",
-    synopsis: "A romantic drama about a writer who mysteriously travels back in time every night at midnight in the City of Light.",
-    year: 2023,
-    genre: ["Romance", "Drama", "Comedy"],
-    rating: 7.8,
-    duration: "1h 54m",
-    poster: "https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=600&fit=crop",
-    backdrop: "https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=1200&h=675&fit=crop",
-    cast: ["Timothée Chalamet", "Florence Pugh", "Oscar Isaac", "Marion Cotillard"],
-    director: "Lulu Wang"
-  },
-  {
-    id: "5",
-    title: "Quantum Detective",
-    synopsis: "A detective uses quantum physics to solve crimes across multiple parallel universes in this mind-bending thriller.",
-    year: 2024,
-    genre: ["Sci-Fi", "Mystery", "Thriller"],
-    rating: 8.5,
-    duration: "2h 12m",
-    poster: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&h=600&fit=crop",
-    backdrop: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=1200&h=675&fit=crop",
-    cast: ["Benedict Cumberbatch", "Viola Davis", "Rami Malek", "Cate Blanchett"],
-    director: "Rian Johnson",
-    isNew: true
-  },
-  {
-    id: "6",
-    title: "Ocean's Legacy",
-    synopsis: "The final adventure of the world's greatest thieves as they pull off one last impossible heist.",
-    year: 2023,
-    genre: ["Action", "Comedy", "Crime"],
-    rating: 8.0,
-    duration: "2h 8m",
-    poster: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=400&h=600&fit=crop",
-    backdrop: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=1200&h=675&fit=crop",
-    cast: ["Ryan Gosling", "Margot Robbie", "Idris Elba", "Sandra Bullock"],
-    director: "Steven Soderbergh"
+// Enhanced API response interface to handle backend response structure
+interface APIResponse<T> {
+  success?: boolean;
+  data?: T;
+  error?: string;
+  // Handle direct array responses or nested data responses
+}
+
+// Helper function to handle API requests with better error handling
+async function fetchFromAPI<T>(endpoint: string): Promise<T> {
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    console.log(`Fetching from: ${API_BASE_URL}${endpoint}`, response);
+
+    if (!response.ok) {
+      // Handle different HTTP status codes
+      if (response.status === 404) {
+        throw new Error(`Resource not found: ${endpoint}`);
+      } else if (response.status === 500) {
+        throw new Error(`Server error: ${response.statusText}`);
+      } else if (response.status >= 400) {
+        throw new Error(
+          `Client error: ${response.status} ${response.statusText}`,
+        );
+      }
+      throw new Error(`Network response was not ok: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    // Handle different response formats from backend
+    // If response has a 'success' field and it's false, throw an error
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "success" in data &&
+      !data.success
+    ) {
+      throw new Error(data.error || "API request failed");
+    }
+
+    // Return the data directly if it's an array or the expected structure
+    return data;
+  } catch (error) {
+    console.error(`Failed to fetch from endpoint ${endpoint}:`, error);
+    throw error; // Re-throw the error to be handled by the caller
   }
-];
+}
 
-export const getMovieById = (id: string): Movie | undefined => {
-  return mockMovies.find(movie => movie.id === id);
+// Enhanced function to validate movie data structure
+function validateMovieData(movie: any): Movie | null {
+  try {
+    // Check required fields
+    if (!movie || typeof movie !== "object") return null;
+    if (!movie.id || !movie.title) return null;
+
+    // Return movie with default values for missing fields
+    return {
+      id: Number(movie.id),
+      title: String(movie.title || "Untitled"),
+      overview: String(movie.overview || "No description available"),
+      year: Number(movie.year || new Date().getFullYear()),
+      genres: String(movie.genres || "Unknown"),
+      vote_average: Number(movie.vote_average || 0),
+      runtime: movie.runtime ? Number(movie.runtime) : undefined,
+      poster_url: String(movie.poster_url || "/api/placeholder/300/450"),
+      backdrop_url: String(movie.backdrop_url || "/api/placeholder/1200/675"),
+      trailer: movie.trailer ? String(movie.trailer) : undefined,
+      actors: movie.actors ? String(movie.actors) : undefined,
+      director: movie.director ? String(movie.director) : undefined,
+      popularity: movie.popularity ? Number(movie.popularity) : undefined,
+      vote_count: movie.vote_count ? Number(movie.vote_count) : undefined,
+    };
+  } catch (error) {
+    console.error("Error validating movie data:", error, movie);
+    return null;
+  }
+}
+
+// Enhanced function to validate and clean movie arrays
+function validateMovieArray(data: any): Movie[] {
+  if (!Array.isArray(data)) {
+    console.warn("Expected array but received:", typeof data, data);
+    return [];
+  }
+
+  const validMovies = data
+    .map(validateMovieData)
+    .filter((movie): movie is Movie => movie !== null);
+
+  console.log(
+    `Validated ${validMovies.length} movies out of ${data.length} received`,
+  );
+  return validMovies;
+}
+
+// Rewritten functions to fetch data from the Django backend with better error handling
+export const getMovieById = async (id: number): Promise<Movie | undefined> => {
+  try {
+    const data = await fetchFromAPI<Movie>(`/movies/${id}/`);
+    const validatedMovie = validateMovieData(data);
+    return validatedMovie || undefined;
+  } catch (error) {
+    console.error(`Failed to get movie with id ${id}:`, error);
+    return undefined; // Return undefined if the movie is not found or an error occurs
+  }
 };
 
-export const getTrendingMovies = (): Movie[] => {
-  return mockMovies.filter(movie => movie.isTrending);
+export const getTrendingMovies = async (): Promise<Movie[]> => {
+  try {
+    const data = await fetchFromAPI<Movie[] | APIResponse<Movie[]>>(
+      `/movies/trending/`,
+    );
+
+    // Handle different response structures
+    const movieArray = Array.isArray(data)
+      ? data
+      : (data as APIResponse<Movie[]>).data || [];
+
+    const validatedMovies = validateMovieArray(movieArray);
+    console.log(
+      `Successfully fetched ${validatedMovies.length} trending movies`,
+    );
+    return validatedMovies;
+  } catch (error) {
+    console.error("Failed to get trending movies:", error);
+    // Return empty array instead of throwing error
+    return [];
+  }
 };
 
-export const getNewReleases = (): Movie[] => {
-  return mockMovies.filter(movie => movie.isNew);
+export const getNewReleases = async (): Promise<Movie[]> => {
+  try {
+    const data = await fetchFromAPI<Movie[] | APIResponse<Movie[]>>(
+      `/movies/new-releases/`,
+    );
+
+    // Handle different response structures
+    const movieArray = Array.isArray(data)
+      ? data
+      : (data as APIResponse<Movie[]>).data || [];
+
+    const validatedMovies = validateMovieArray(movieArray);
+    console.log(`Successfully fetched ${validatedMovies.length} new releases`);
+    return validatedMovies;
+  } catch (error) {
+    console.error("Failed to get new releases:", error);
+    // Return empty array instead of throwing error
+    return [];
+  }
 };
 
-export const getTopRated = (): Movie[] => {
-  return mockMovies.sort((a, b) => b.rating - a.rating);
+export const getTopRated = async (): Promise<Movie[]> => {
+  try {
+    const data = await fetchFromAPI<Movie[] | APIResponse<Movie[]>>(
+      `/movies/top-rated/`,
+    );
+
+    // Handle different response structures
+    const movieArray = Array.isArray(data)
+      ? data
+      : (data as APIResponse<Movie[]>).data || [];
+
+    const validatedMovies = validateMovieArray(movieArray);
+    console.log(
+      `Successfully fetched ${validatedMovies.length} top-rated movies`,
+    );
+    return validatedMovies;
+  } catch (error) {
+    console.error("Failed to get top-rated movies:", error);
+    // Return empty array instead of throwing error
+    return [];
+  }
 };
