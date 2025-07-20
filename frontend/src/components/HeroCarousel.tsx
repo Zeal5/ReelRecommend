@@ -26,7 +26,9 @@ export const HeroCarousel = ({ movies }: HeroCarouselProps) => {
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + movies.length) % movies.length);
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + movies.length) % movies.length,
+    );
   };
 
   const goToSlide = (index: number) => {
@@ -42,7 +44,7 @@ export const HeroCarousel = ({ movies }: HeroCarouselProps) => {
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
-          src={currentMovie.backdrop}
+          src={currentMovie.backdrop_url.replace("w500", "w1280")}
           alt={currentMovie.title}
           className="w-full h-full object-cover"
         />
@@ -55,14 +57,6 @@ export const HeroCarousel = ({ movies }: HeroCarouselProps) => {
         <div className="container mx-auto px-4">
           <div className="max-w-2xl animate-fade-in">
             {/* Badges */}
-            <div className="flex gap-2 mb-4">
-              {currentMovie.isTrending && (
-                <Badge className="bg-gradient-primary text-white">TRENDING</Badge>
-              )}
-              {currentMovie.isNew && (
-                <Badge className="bg-primary text-primary-foreground">NEW RELEASE</Badge>
-              )}
-            </div>
 
             {/* Title */}
             <h1 className="text-6xl font-bold text-white mb-4 drop-shadow-2xl">
@@ -71,19 +65,24 @@ export const HeroCarousel = ({ movies }: HeroCarouselProps) => {
 
             {/* Synopsis */}
             <p className="text-xl text-gray-200 mb-6 max-w-xl leading-relaxed">
-              {currentMovie.synopsis}
+              {currentMovie.overview}
             </p>
 
             {/* Movie Info */}
             <div className="flex items-center gap-4 text-gray-300 mb-8">
               <span className="font-medium">{currentMovie.year}</span>
               <span>•</span>
-              <span>{currentMovie.duration}</span>
+              <span>{currentMovie.runtime}</span>
               <span>•</span>
               <div className="flex gap-2">
-                {currentMovie.genre.slice(0, 3).map((genre) => (
-                  <span key={genre} className="text-sm">{genre}</span>
-                ))}
+                {currentMovie.genres
+                  .split("|")
+                  .slice(0, 3)
+                  .map((genre) => (
+                    <span key={genre} className="text-sm">
+                      {genre}
+                    </span>
+                  ))}
               </div>
             </div>
 
