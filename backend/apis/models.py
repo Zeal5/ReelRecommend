@@ -4,6 +4,10 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 User = get_user_model()
 
+class MovieManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(adult=False)
+
 class Movie(models.Model):
     # Basic movie information
     title = models.CharField(max_length=200, db_index=True)
@@ -34,6 +38,8 @@ class Movie(models.Model):
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = MovieManager()
     
     class Meta:
         ordering = ['-popularity', '-vote_average']
