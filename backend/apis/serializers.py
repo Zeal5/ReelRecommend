@@ -22,6 +22,7 @@ class MovieSerializer(serializers.ModelSerializer):
             "vote_count",
             "runtime",
             "average_rating",
+            "imdb_id",
         ]
 
 
