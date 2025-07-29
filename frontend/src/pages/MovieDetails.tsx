@@ -169,10 +169,9 @@ const MovieDetails = () => {
               Watch {movie.title}
             </h2>
             {/* CHANGE: Updated poster property */}
-            <VideoPlayer poster={movie.backdrop_url} title={movie.title} />
+            <VideoPlayer poster={movie.backdrop_url} imdbId={movie.imdb_id} />
           </div>
 
-          {/* REMOVED: Episodes section, as it's not part of the current Movie data model */}
         </div>
       </div>
     </div>

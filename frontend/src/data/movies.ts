@@ -15,6 +15,7 @@ export interface Movie {
   director?: string;
   popularity?: number;
   vote_count?: number;
+	imdb_id?: string;
 }
 
 export interface Episode {
@@ -99,6 +100,7 @@ function validateMovieData(movie: any): Movie | null {
       director: movie.director ? String(movie.director) : undefined,
       popularity: movie.popularity ? Number(movie.popularity) : undefined,
       vote_count: movie.vote_count ? Number(movie.vote_count) : undefined,
+			imdb_id: movie.imdb_id ? movie.imdb_id : undefined
     };
   } catch (error) {
     console.error("Error validating movie data:", error, movie);
@@ -125,6 +127,7 @@ function validateMovieArray(data: any): Movie[] {
 
 // Rewritten functions to fetch data from the Django backend with better error handling
 export const getMovieById = async (id: number): Promise<Movie | undefined> => {
+	console.log(`Fetching movie with id ${id}`);
   try {
     const data = await fetchFromAPI<Movie>(`/movies/${id}/`);
     const validatedMovie = validateMovieData(data);
@@ -147,9 +150,6 @@ export const getTrendingMovies = async (): Promise<Movie[]> => {
       : (data as APIResponse<Movie[]>).data || [];
 
     const validatedMovies = validateMovieArray(movieArray);
-    console.log(
-      `Successfully fetched ${validatedMovies.length} trending movies`,
-    );
     return validatedMovies;
   } catch (error) {
     console.error("Failed to get trending movies:", error);
@@ -170,7 +170,6 @@ export const getNewReleases = async (): Promise<Movie[]> => {
       : (data as APIResponse<Movie[]>).data || [];
 
     const validatedMovies = validateMovieArray(movieArray);
-    console.log(`Successfully fetched ${validatedMovies.length} new releases`);
     return validatedMovies;
   } catch (error) {
     console.error("Failed to get new releases:", error);
@@ -191,9 +190,6 @@ export const getTopRated = async (): Promise<Movie[]> => {
       : (data as APIResponse<Movie[]>).data || [];
 
     const validatedMovies = validateMovieArray(movieArray);
-    console.log(
-      `Successfully fetched ${validatedMovies.length} top-rated movies`,
-    );
     return validatedMovies;
   } catch (error) {
     console.error("Failed to get top-rated movies:", error);
@@ -201,3 +197,23 @@ export const getTopRated = async (): Promise<Movie[]> => {
     return [];
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
