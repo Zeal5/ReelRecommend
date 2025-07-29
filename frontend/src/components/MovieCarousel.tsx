@@ -8,7 +8,7 @@ import React from "react";
 export const EnhancedMovieCarousel: React.FC<{
   title: string;
   movies: Movie[];
-  size?: "sm" | "md" | "lg";
+  size?:  "md" | "lg";
   onRate?: (movieId: number, rating: number) => void;
   onInteraction?: (movieId: number, type: string) => void;
   loading?: boolean;

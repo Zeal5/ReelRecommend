@@ -248,7 +248,7 @@ const Home: React.FC = () => {
         <EnhancedMovieCarousel
           title="Recommended for You"
           movies={recommendations}
-          size="md"
+          size="lg"
           onRate={handleRating}
           onInteraction={handleInteraction}
           loading={loadingStates.recommendations}
@@ -280,7 +280,7 @@ const Home: React.FC = () => {
         <EnhancedMovieCarousel
           title="Top Rated Movies"
           movies={topRated}
-          size="md"
+          size="lg"
           onRate={handleRating}
           onInteraction={handleInteraction}
           loading={loadingStates.topRated}
