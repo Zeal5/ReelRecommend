@@ -130,7 +130,7 @@ export const VideoPlayer = ({ poster, imdbId }: VideoPlayerProps) => {
     }
   };
 
-  return videoSrc ? (
+  return imdbId ? (
     <div className= "relative w-full aspect-video rounded-lg overflow-hidden group">
 			<iframe src={videoSrc} width="100%" height="100%"  allowFullScreen></iframe>
 
@@ -142,6 +142,7 @@ export const VideoPlayer = ({ poster, imdbId }: VideoPlayerProps) => {
       onMouseLeave={() => setShowControls(false)}
     >
       {/* Video element */}
+				This Movie is not available
       <video
         ref={videoRef}
         src={videoSrc}
